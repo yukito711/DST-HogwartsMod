@@ -30,7 +30,7 @@ end
 local function onattack(inst, attacker, target)
     -- 每次攻击扣除6点san值
     if attacker and attacker.components.sanity then
-        attacker.components.sanity:DoDelta(6)
+        attacker.components.sanity:DoDelta(-6)
     end
 
     -- 广播飞行特效位置给客户端
