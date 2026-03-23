@@ -1,36 +1,63 @@
 -- modmain.lua
+-- Hogwarts & Magic World Mod 入口文件
+-- 职责：资源注册、组件注册、配方Tab、全局数据加载
+
+-- ============================================================
+-- 全局数据加载（最先执行，其他文件依赖 HWTUNE）
+-- ============================================================
+
+require("hw_data/hw_tuning")  -- 注入全局 HWTUNE 表
+
+-- ============================================================
+-- 资源声明
+-- ============================================================
+
 Assets = {
     Asset("IMAGE", "images/inventoryimages/magic_wand.tex"),
     Asset("ATLAS", "images/inventoryimages/magic_wand.xml"),
 }
 
+-- ============================================================
+-- Prefab 文件注册
+-- ============================================================
+
 PrefabFiles = {
+    -- 已验证的旧版魔杖（保留兼容性，后续可移除）
     "magic_wand",
-    "fireball_projectile",
+    -- 新版 hw_ 系列
+    "hw_magic_wand",
+    "hw_magic_workbench",
 }
 
--- 创建自定义魔法标签栏
+-- ============================================================
+-- 组件注册
+-- ============================================================
+
+-- hw_mana 组件：在 modmain 中注册，DST 才能识别自定义组件路径
+-- 注意：DST 会自动从 scripts/components/ 查找同名 lua 文件
+-- 无需显式 require，AddComponentPostInit 会在组件首次被 AddComponent 时触发
+
+-- ============================================================
+-- 魔法配方 Tab（所有 hw_ 物品共用此 Tab）
+-- ============================================================
+
 local MAGIC_TAB = AddRecipeTab(
     "魔法",                                    -- 标签名称
-    999,                                        -- 排序权重
+    999,                                        -- 排序权重（越大越靠后）
     "images/inventoryimages/magic_wand.xml",   -- 标签图标图集
-    "magic_wand.tex",                          -- 标签图标
+    "magic_wand.tex",                          -- 标签图标纹理
     0                                           -- 标签类型
 )
 
--- 魔杖配方
-AddRecipe(
-    "magic_wand",
-    {
-        Ingredient("livinglog", 2),
-        Ingredient("deerclops_eyeball", 1),
-        Ingredient("bluegem", 1),
-    },
-    MAGIC_TAB,
-    GLOBAL.TECH.SCIENCE_TWO,
-    nil, 1, nil, nil, nil,
-    "images/inventoryimages/magic_wand.xml",
-    "magic_wand.tex"
-)
+-- 将 MAGIC_TAB 存入全局，供 recipes.lua 引用
+GLOBAL.HW_MAGIC_TAB = MAGIC_TAB
 
-print("[Hogwarts Mod] Loaded successfully!")
+-- ============================================================
+-- 配方由 scripts/recipes.lua 统一管理（modmain 不再重复注册）
+-- ============================================================
+
+-- ============================================================
+-- 启动日志
+-- ============================================================
+
+print("[Hogwarts Mod] Loaded successfully! HWTUNE.MANA_BASE_MAX =", HWTUNE.MANA_BASE_MAX)
